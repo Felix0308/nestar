@@ -7,17 +7,17 @@ export class MemberResolver {
 
 	@Mutation(() => String)
 	public async signup(): Promise<string> {
-		console.log('Mutation singup');
+		console.log('Mutation: singup');
 		return this.memberService.signup();
 	}
 	@Mutation(() => String)
 	public async login(): Promise<string> {
-		console.log('Mutation login');
+		console.log('Mutation: login');
 		return this.memberService.login();
 	}
 	@Mutation(() => String)
 	public async updateMember(): Promise<string> {
-		console.log('Mutation updateMember');
+		console.log('Mutation: updateMember');
 		return this.memberService.updateMember();
 	}
 	@Query(() => String)
