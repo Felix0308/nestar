@@ -6,7 +6,7 @@ export enum MemberType {
 	ADMIN = 'ADMIN',
 }
 
-// MemberType ni graphql da ham ishlatishimiz mumkin
+// registerEnumType => MemberType ni graphql da ham ishlatishimizga ruxsat beradi
 registerEnumType(MemberType, {
 	name: 'MemberType',
 });
