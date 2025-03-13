@@ -33,7 +33,7 @@ import { T } from './libs/types/common';
 		ComponentsModule, // HTTP
 		DatabaseModule, // TCP
 	],
-	controllers: [AppController],
-	providers: [AppService, AppResolver],
+	controllers: [AppController],  // bu server Rest Api sifatiada run bo'lyapti
+	providers: [AppService, AppResolver],  // graphQL sifatida ham run bo'lyapti
 })
 export class AppModule {}
