@@ -19,7 +19,7 @@ import { T } from './libs/types/common';
 			autoSchemaFile: true,
 			formatError: (error: T) => {
 				// graphQl da ixtiyoriy errorni olib beradi
-				console.log('error:', error);
+				// console.log('error:', error);
 				const graphqlFormattedError = {
 					// errorni bir standartga keltirdik
 					code: error?.extensions.code,
