@@ -29,9 +29,11 @@ export class MemberService {
 			.select('+memberPassword') // memberPassword ni by default olib beradi
 			.exec();
 
-		if (!response || response.memberStatus === MemberStatus.DELETE) {  // user o'zini delete qilib chiqiqb ketgan bo'lsa 
+		if (!response || response.memberStatus === MemberStatus.DELETE) {
+			// user o'zini delete qilib chiqib ketgan bo'lsa
 			throw new InternalServerErrorException(Message.NO_MEMBER_NICK);
-		} else if (response.memberStatus === MemberStatus.BLOCK) {   // agar user block bo'lgan bo'lsa 
+		} else if (response.memberStatus === MemberStatus.BLOCK) {
+			// agar user block bo'lgan bo'lsa
 			throw new InternalServerErrorException(Message.BLOCKED_USER); // block massageni chiqar
 		}
 
