@@ -23,7 +23,9 @@ import { T } from './libs/types/common';
 				const graphqlFormattedError = {
 					// errorni bir standartga keltirdik
 					code: error?.extensions.code,
-					message: error?.extensions?.response?.message || error?.extensions?.response?.message || error?.message,
+					message: error?.extensions?.response?.message || 
+					error?.extensions?.response?.message || 
+					error?.message,
 				};
 
 				console.log('GraphQL global Error:', graphqlFormattedError);
