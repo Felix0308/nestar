@@ -32,8 +32,8 @@ export class RolesGuard implements CanActivate {
 			request.body.authMember = authMember;
 			return true;
 		}
-		// return roles.includes(req.user.role);
 
 		// description => http, rpc, gprs and etc are ignored
+		return false;
 	}
 }
