@@ -64,7 +64,7 @@ export class MemberService {
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 
 		result.accessToken = await this.authService.createToken(result);
-		// accessToken ni qayta qurishdan maqsad => user malumotlarini o'zgartirsafrontendda o'zgarishsiz qoladi
+		// accessToken ni qayta qurishdan maqsad => user malumotlarini o'zgartirsa frontendda o'zgarishsiz qoladi
 		return result;
 	}
 
@@ -107,7 +107,7 @@ export class MemberService {
 		};
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC }; //=> dinamic usul yoki bu => {createdAt: -1};
 
-		if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
+		if (text) match.memberNick = { $regex: new RegExp(text, 'i') };  // 'i' - ignore
 
 		const result = await this.memberModel
 			.aggregate([
