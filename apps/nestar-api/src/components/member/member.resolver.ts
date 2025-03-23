@@ -134,7 +134,7 @@ export class MemberResolver {
 	): Promise<string[]> {
 		console.log('Mutation: imagesUploader');
 
-		const uploadedImages = [];
+		const uploadedImages: string[] = [];
 		const promisedList = files.map(async (img: Promise<FileUpload>, index: number): Promise<Promise<void>> => {
 			try {
 				const { filename, mimetype, encoding, createReadStream } = await img;
