@@ -10,6 +10,8 @@ import { PropertyStatus } from '../../libs/enums/property.enum';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { ViewInput } from '../../libs/dto/view/view.input';
 import { ViewService } from '../view/view.service';
+import { PropertyUpdate } from '../../libs/dto/property/property.update';
+import * as moment from 'moment';
 
 @Injectable()
 export class PropertyService {
@@ -64,5 +66,38 @@ export class PropertyService {
 		return (await this.propertyModel
 			.findByIdAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
 			.exec()) as unknown as Property;
+	}
+
+	public async updateProperty(memberId: ObjectId, input: PropertyUpdate): Promise<Property> {
+		let { propertyStatus, soldAt, deletedAt } = input;
+		console.log('propertyStatus:', propertyStatus);
+		console.log('soldAt:', soldAt);
+		console.log('deletedAt:', deletedAt);
+
+		const search: T = {
+			// serching object hosil qilindi
+			_id: input._id,
+			memberId: memberId,
+			propertyStatus: PropertyStatus.ACTIVE, // faqat ACTIV holatdagi propertylarni agentlar update qila oladi
+		};
+
+		// if (propertyStatus === PropertyStatus.SOLD) soldAt = moment().toDate();  // savdo vaqti ro'yxatga olinyapti
+		// else if (propertyStatus === PropertyStatus.DELETE) deletedAt = moment().toDate();  // o'chirilayotgan vaqti
+
+		if (propertyStatus === PropertyStatus.SOLD) soldAt = new Date();
+		else if (propertyStatus === PropertyStatus.DELETE) deletedAt = new Date();
+
+		const result = await this.propertyModel.findOneAndUpdate(search, input, { new: true }).exec();
+		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+
+		if (soldAt || deletedAt) {
+			await this.memberService.memberStatsEditor({
+				_id: memberId,
+				targetKey: 'memberProperties',
+				modifier: -1,
+			}); // agentni propertylar soni 1 ga kamaymoqda
+		}
+
+		return result;
 	}
 }
