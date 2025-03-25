@@ -209,7 +209,7 @@ export class PropertyService {
 		const { page, limit, sort, direction, search } = input;
 		const { propertyStatus, propertyLocationList } = search;
 
-		const match: T = {};  // match objectni hosil qildik
+		const match: T = {}; // match objectni hosil qildik
 		const sortFinal = { [sort ?? 'createdAt']: direction ?? Direction.DESC };
 
 		if (propertyStatus) match.propertyStatus = propertyStatus;
@@ -223,7 +223,7 @@ export class PropertyService {
 					$facet: {
 						list: [
 							{ $skip: (input.page - 1) * input.limit },
-							{ $limit: input.limit },  // [property1, propetry2]
+							{ $limit: input.limit }, // [property1, propetry2]
 							lookupMember, // [memberData] ni olib beradi
 							{ $unwind: '$memberData' }, // bu [memberData] => arrayni tushirib memberData ni olib beradi
 						],
@@ -236,5 +236,25 @@ export class PropertyService {
 		if (!result) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
 		return result[0];
+	}
+
+	public async updatePropertyByAdmin(input: PropertyUpdate): Promise<Property> {
+		let { propertyStatus, soldAt, deletedAt } = input;
+		const search: T = {
+			_id: input._id,
+			propertyStatus: PropertyStatus.ACTIVE,
+		};
+
+		if (propertyStatus === PropertyStatus.SOLD) input.soldAt = moment().toDate();
+		else if (propertyStatus === PropertyStatus.DELETE) input.deletedAt = moment().toDate();
+
+		const result = await this.propertyModel.findOneAndUpdate(search, input, { new: true }).exec();
+		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+
+		if (soldAt || deletedAt) {
+			await this.memberService.memberStatsEditor({ _id: result.memberId, targetKey: 'memberProperties', modifier: -1 });
+		}
+
+		return result;
 	}
 }
