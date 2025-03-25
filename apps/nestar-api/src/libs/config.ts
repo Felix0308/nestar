@@ -28,9 +28,9 @@ export const shapeIntoMongoObjectId = (target: any) => {
 };
 export const lookupMember = {
 	$lookup: {
-		from: 'members',
-		localField: 'memberId',
-		foreignField: '_id',
-		as: 'memberData',
+		from: 'members', // boshqa collectiondan
+		localField: 'memberId', // memberId ni qo'lga olyapmiz
+		foreignField: '_id', // boshqa collectiondan _id nomi bilan qidiryapmiz
+		as: 'memberData',  // agar topilsa uning qiymatini memberData bilan belgilayapmiz
 	},
 };

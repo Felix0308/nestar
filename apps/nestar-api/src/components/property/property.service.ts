@@ -3,7 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { Properties, Property } from '../../libs/dto/property/property';
 import { Direction, Message } from '../../libs/enums/common.enum';
-import { AgentPropertiesInquiry, PISearch, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import {
+	AgentPropertiesInquiry,
+	AllPropertiesInquiry,
+	PISearch,
+	PropertiesInquiry,
+	PropertyInput,
+} from '../../libs/dto/property/property.input';
 import { MemberService } from '../member/member.service';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { PropertyStatus } from '../../libs/enums/property.enum';
@@ -189,6 +195,40 @@ export class PropertyService {
 					$facet: {
 						list: [{ $skip: page - 1 }, { $limit: limit }, lookupMember, { $unwind: '$memberData' }],
 						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
+		if (!result) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		return result[0];
+	}
+
+	/** ADMIN */
+	public async getAllPropertiesByAdmin(input: AllPropertiesInquiry): Promise<Properties> {
+		const { page, limit, sort, direction, search } = input;
+		const { propertyStatus, propertyLocationList } = search;
+
+		const match: T = {};  // match objectni hosil qildik
+		const sortFinal = { [sort ?? 'createdAt']: direction ?? Direction.DESC };
+
+		if (propertyStatus) match.propertyStatus = propertyStatus;
+		if (propertyLocationList) match.propertyLocation = { $in: propertyLocationList };
+
+		const result = await this.propertyModel
+			.aggregate([
+				{ $match: match },
+				{ $sort: sortFinal },
+				{
+					$facet: {
+						list: [
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },  // [property1, propetry2]
+							lookupMember, // [memberData] ni olib beradi
+							{ $unwind: '$memberData' }, // bu [memberData] => arrayni tushirib memberData ni olib beradi
+						],
+						metaCounter: [{ $count: 'total' }],
+						// pagination ni hosil qilyapmiz
 					},
 				},
 			])
