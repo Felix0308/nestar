@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import { Property } from '../../libs/dto/property/property';
-import { Message } from '../../libs/enums/common.enum';
-import { PropertyInput } from '../../libs/dto/property/property.input';
+import { Properties, Property } from '../../libs/dto/property/property';
+import { Direction, Message } from '../../libs/enums/common.enum';
+import { PISearch, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
 import { MemberService } from '../member/member.service';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { PropertyStatus } from '../../libs/enums/property.enum';
@@ -12,6 +12,7 @@ import { ViewInput } from '../../libs/dto/view/view.input';
 import { ViewService } from '../view/view.service';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import * as moment from 'moment';
+import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 
 @Injectable()
 export class PropertyService {
@@ -99,5 +100,72 @@ export class PropertyService {
 		}
 
 		return result;
+	}
+
+	public async getProperties(memberId: ObjectId, input: PropertiesInquiry): Promise<Properties> {
+		const { page, limit, sort, direction, search } = input;
+
+		const match: T = { propertyStatus: PropertyStatus.ACTIVE }; // faqta ACTIV propertylarni ko'rish huquqiga ega bo'ladi
+		const sortFinal: T = { [sort ?? 'createdAt']: direction ?? Direction.DESC };
+
+		this.shapeMatchQuery(match, search);
+		console.log('match:', match);
+
+		const result = await this.propertyModel
+			.aggregate([
+				{ $match: match },
+				{ $sort: sortFinal },
+				{
+					$facet: {
+						list: [
+							{ $skip: page - 1 },
+							{ $limit: limit },
+							//meliked
+							lookupMember, // config.ts da logic yozilgan
+							{ $unwind: '$memberData' },
+						],
+
+						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
+		if (!result) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		return result[0];
+	}
+
+	private shapeMatchQuery(match: T, search: PISearch): void {
+		const {
+			memberId,
+			locationList,
+			typeList,
+			roomList,
+			bedsList,
+			options,
+			pricesRange,
+			periodsRange,
+			squaresRange,
+			text,
+		} = search;
+
+		if (memberId) match.memberId = shapeIntoMongoObjectId(memberId);
+		if (locationList) match.propertyLocation = { $in: locationList };
+		if (roomList) match.propertyRooms = { $in: roomList };
+		if (bedsList) match.propertyBeds = { $in: bedsList };
+		if (typeList) match.propertyType = { $in: typeList };
+
+		if (pricesRange) match.propertyPrice = { $gte: pricesRange.start, $lte: pricesRange.end };
+		// $gte: katta yoki teng, $lte: kichik yoki teng
+		if (periodsRange) match.constructedAt = { $gte: periodsRange.start, $lte: periodsRange.end };
+		if (squaresRange) match.propertySquare = { $gte: squaresRange.start, $lte: squaresRange.end };
+
+		if (text) match.propertyTitle = { $regex: text, $options: 'i' };
+		if (options) {
+			match['$or'] = options.map((ele) => {
+				// qaytarilagn qiymatni 'Or' bilan olyapmiz
+				return { [ele]: true }; // ele - qiymat
+			});
+		}
 	}
 }
