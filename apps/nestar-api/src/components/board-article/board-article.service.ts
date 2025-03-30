@@ -10,7 +10,7 @@ import {
 import { MemberService } from '../member/member.service';
 import { ViewService } from '../view/view.service';
 import { Direction, Message } from '../../libs/enums/common.enum';
-import { BoardArticleCategory, BoardArticleStatus } from '../../libs/enums/board-article.enum';
+import { BoardArticleStatus } from '../../libs/enums/board-article.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { ViewInput } from '../../libs/dto/view/view.input';
