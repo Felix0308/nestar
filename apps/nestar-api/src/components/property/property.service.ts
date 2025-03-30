@@ -69,13 +69,6 @@ export class PropertyService {
 		return targetProperty;
 	}
 
-	public async propertyStatsEditor(input: StatisticModifier): Promise<Property> {
-		const { _id, targetKey, modifier } = input;
-		return (await this.propertyModel
-			.findByIdAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
-			.exec()) as unknown as Property;
-	}
-
 	public async updateProperty(memberId: ObjectId, input: PropertyUpdate): Promise<Property> {
 		let { propertyStatus, soldAt, deletedAt } = input;
 		console.log('propertyStatus:', propertyStatus);
@@ -287,5 +280,12 @@ export class PropertyService {
 		// agar o'chirilmagan bo'lsa shu mantiq ishga tushadi
 
 		return result;
+	}
+
+	public async propertyStatsEditor(input: StatisticModifier): Promise<Property> {
+		const { _id, targetKey, modifier } = input;
+		return (await this.propertyModel
+			.findByIdAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
+			.exec()) as unknown as Property;
 	}
 }
