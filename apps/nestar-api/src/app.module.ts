@@ -9,7 +9,7 @@ import { ComponentsModule } from './components/components.module';
 import { DatabaseModule } from './database/database.module';
 import { T } from './libs/types/common';
 
-@Module({
+@Module({  
 	imports: [
 		ConfigModule.forRoot(),
 		GraphQLModule.forRoot({
