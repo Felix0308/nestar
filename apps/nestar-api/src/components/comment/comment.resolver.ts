@@ -16,7 +16,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 @Resolver()
 export class CommentResolver {
 	constructor(private readonly commentService: CommentService) {}
-    //commentService ni instance ni hosil qildik
+	//commentService ni instance ni hosil qildik
 
 	@UseGuards(AuthGuard)
 	@Mutation((returns) => Comment)
@@ -48,5 +48,15 @@ export class CommentResolver {
 		console.log('Query: getComments');
 		input.search.commentRefId = shapeIntoMongoObjectId(input.search.commentRefId);
 		return await this.commentService.getComments(memberId, input);
+	}
+
+	/** ADMIN */
+	@Roles(MemberType.ADMIN)
+	@UseGuards(RolesGuard)
+	@Mutation((returns) => Comment)
+	public async removeCommentByAdmin(@Args('commentId') input: string): Promise<Comment> {
+		console.log('Mutation: removeCommentByAdmin');
+		const commentId = shapeIntoMongoObjectId(input);
+		return await this.commentService.removeCommentByAdmin(commentId);
 	}
 }
