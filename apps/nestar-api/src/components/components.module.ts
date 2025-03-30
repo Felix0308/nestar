@@ -10,10 +10,10 @@ import { BoardArticleModule } from './board-article/board-article.module';
 
 @Module({
 	imports: [
-		MemberModule,
-		AuthModule,
-		PropertyModule,
-		BoardArticleModule,
+		MemberModule,  // member
+		AuthModule,  // memberlarni autentication qismi
+		PropertyModule,  // turli xil uylarni hosil qilish
+		BoardArticleModule,  // comunity bolimidagi articles
 		LikeModule,
 		ViewModule,
 		CommentModule,

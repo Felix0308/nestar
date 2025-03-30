@@ -49,7 +49,7 @@ export class PropertyResolver {
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Property> {
 		console.log('Mutation: updateProperty');
-		input._id = shapeIntoMongoObjectId(input._id);
+		input._id = shapeIntoMongoObjectId(input._id);  // faqat update qilinishi kerak bo'lgan property
 
 		return await this.propertyService.updateProperty(memberId, input);
 	}
@@ -65,12 +65,12 @@ export class PropertyResolver {
 		return await this.propertyService.getProperties(memberId, input);
 	}
 
-	@Roles(MemberType.AGENT)
+	@Roles(MemberType.AGENT)  // faqat AGENT lar ishlata oladigon GraphQL api
 	@UseGuards(RolesGuard)
 	@Query(() => Properties)
 	public async getAgentProperties(
 		@Args('input') input: AgentPropertiesInquiry,
-		@AuthMember('_id') memberId: ObjectId,
+		@AuthMember('_id') memberId: ObjectId,  // AGENTimizni memberIDsi
 	): Promise<Properties> {
 		console.log('Query: getAgentProperties');
 

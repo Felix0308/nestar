@@ -86,8 +86,8 @@ export class Property {
 @ObjectType()
 export class Properties {
 	@Field(() => [Property])
-	list: Property[];
-
+	list: Property[];     // bir qancha propertylardan iborat
+	
 	@Field(() => [TotalCounter], {nullable: true})
 	metaCounter: TotalCounter[];  // serachimizga to'g'ri keladigon propertylarni sonini hisoblab beradi
 }

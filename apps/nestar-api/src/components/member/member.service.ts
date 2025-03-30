@@ -73,14 +73,14 @@ export class MemberService {
 			_id: targetId,
 			memberStatus: {
 				$in: [MemberStatus.ACTIVE, MemberStatus.BLOCK],
-				// block bo'lgan member ma'lumotlarini ko'rish imkoniyati
+				// ACTIVE va BLOCK bo'lgan member ma'lumotlarini ko'rish imkoniyati
 			},
 		};
 
 		const targetMember: Member | null = await this.memberModel.findOne(search).lean().exec();
 		if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
-		if (memberId) {
+		if (memberId) { 
 			// record view
 			const viewInput = {
 				memberId: memberId,
@@ -100,7 +100,7 @@ export class MemberService {
 	}
 
 	public async getAgents(memberId: ObjectId, input: AgentsInquiry): Promise<Members> {
-		const { text } = input.search; // birorta textni search qilsh
+		const { text } = input.search; // birorta textni search qilmoqchi bo'lsak input.searchdan olamiz
 		const match: T = {
 			memberType: MemberType.AGENT,
 			memberStatus: MemberStatus.ACTIVE,
@@ -168,7 +168,7 @@ export class MemberService {
 			.findOneAndUpdate(
 				_id,
 				{
-					$inc: { [targetKey]: modifier },
+					$inc: { [targetKey]: modifier }, // increase syntaxsis
 				},
 				{ new: true },
 			)

@@ -46,7 +46,7 @@ export class PropertyUpdate {
 	propertyBeds?: number;
 
 	@IsOptional()
-	@IsInt()
+	@IsInt()  // Integer bo'lmasa validation xatolik beradi
 	@Min(1)
 	@Field(() => Int, { nullable: true })
 	propertyRooms?: number;

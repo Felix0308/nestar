@@ -53,6 +53,7 @@ export class PropertyService {
 		if (!targetProperty) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
 		if (memberId) {
+			// Authenticate bo'lgan member murojat qilganda
 			const viewInput: ViewInput = { memberId: memberId, viewRefId: propertyId, viewGroup: ViewGroup.PROPERTY };
 			const newView = await this.viewService.recordView(viewInput);
 
@@ -83,8 +84,8 @@ export class PropertyService {
 
 		const search: T = {
 			// serching object hosil qilindi
-			_id: input._id,
-			memberId: memberId,
+			_id: input._id, // aynan qaysi propertyni update qilish kerakligi
+			memberId: memberId, // agent mizni propertysi bo'lishi shart, agent o'zini propetysini yangilay olishi shart
 			propertyStatus: PropertyStatus.ACTIVE, // faqat ACTIV holatdagi propertylarni agentlar update qila oladi
 		};
 
@@ -94,15 +95,16 @@ export class PropertyService {
 		if (propertyStatus === PropertyStatus.SOLD) soldAt = new Date();
 		else if (propertyStatus === PropertyStatus.DELETE) deletedAt = new Date();
 
-		const result = await this.propertyModel.findOneAndUpdate(search, input, { new: true }).exec();
+		const result = await this.propertyModel.findOneAndUpdate(search, input, { new: true }).exec(); // updateni standart holatda amalga oshiryapmiz
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 
 		if (soldAt || deletedAt) {
+			// qachonki status o'zgarsa agentni memberProperties soni 1 ga kamayadi
 			await this.memberService.memberStatsEditor({
 				_id: memberId,
 				targetKey: 'memberProperties',
 				modifier: -1,
-			}); // agentni propertylar soni 1 ga kamaymoqda
+			});
 		}
 
 		return result;
@@ -114,7 +116,7 @@ export class PropertyService {
 		const match: T = { propertyStatus: PropertyStatus.ACTIVE }; // faqta ACTIV propertylarni ko'rish huquqiga ega bo'ladi
 		const sortFinal: T = { [sort ?? 'createdAt']: direction ?? Direction.DESC };
 
-		this.shapeMatchQuery(match, search);
+		this.shapeMatchQuery(match, search); // OOP match referance bitta shuning uchun return qabul qilishimiz shart emas
 		console.log('match:', match);
 
 		const result = await this.propertyModel
@@ -128,7 +130,7 @@ export class PropertyService {
 							{ $limit: limit },
 							//meliked
 							lookupMember, // config.ts da logic yozilgan
-							{ $unwind: '$memberData' },
+							{ $unwind: '$memberData' }, // array ichidagi malumotni memberData ga to'g'rilab berayapti
 						],
 
 						metaCounter: [{ $count: 'total' }],
@@ -142,8 +144,9 @@ export class PropertyService {
 	}
 
 	private shapeMatchQuery(match: T, search: PISearch): void {
+		// input asosida matchni qiymatlarini shakllantirib olyapmiz
 		const {
-			memberId,
+			memberId, // distarction qilyapmiz: inputni ichidan quyidagi malumotlarni qabul qilyapmiz
 			locationList,
 			typeList,
 			roomList,
@@ -155,8 +158,8 @@ export class PropertyService {
 			text,
 		} = search;
 
-		if (memberId) match.memberId = shapeIntoMongoObjectId(memberId);
-		if (locationList) match.propertyLocation = { $in: locationList };
+		if (memberId) match.memberId = shapeIntoMongoObjectId(memberId); // memberId mavjud bo'lsa matchga memberId ni yuklayapmiz, ayni agentimizni propertylarini olib beradi
+		if (locationList) match.propertyLocation = { $in: locationList }; // aynan locationlistlarni olib beradi arrayda
 		if (roomList) match.propertyRooms = { $in: roomList };
 		if (bedsList) match.propertyBeds = { $in: bedsList };
 		if (typeList) match.propertyType = { $in: typeList };
@@ -166,7 +169,7 @@ export class PropertyService {
 		if (periodsRange) match.constructedAt = { $gte: periodsRange.start, $lte: periodsRange.end };
 		if (squaresRange) match.propertySquare = { $gte: squaresRange.start, $lte: squaresRange.end };
 
-		if (text) match.propertyTitle = { $regex: text, $options: 'i' };
+		if (text) match.propertyTitle = { $regex: text, $options: 'i' }; // regular expression orqali searching ni amalga oshiryapmiz
 		if (options) {
 			match['$or'] = options.map((ele) => {
 				// qaytarilagn qiymatni 'Or' bilan olyapmiz
@@ -183,7 +186,7 @@ export class PropertyService {
 
 		const match: T = {
 			memberId: memberId,
-			propertyStatus: propertyStatus ?? { $ne: PropertyStatus.DELETE },
+			propertyStatus: propertyStatus ?? { $ne: PropertyStatus.DELETE }, // DELETE ga teng bo'lmasligi kerak
 		};
 		const sortFinal = { [sort ?? 'createdAt']: direction ?? Direction.DESC };
 
@@ -211,19 +214,24 @@ export class PropertyService {
 
 		const match: T = {}; // match objectni hosil qildik
 		const sortFinal = { [sort ?? 'createdAt']: direction ?? Direction.DESC };
+		// kiritilmagan bo'lsa default qiymatlarini ko'rsatyapmiz
 
 		if (propertyStatus) match.propertyStatus = propertyStatus;
 		if (propertyLocationList) match.propertyLocation = { $in: propertyLocationList };
+		// LocationList izlash mantig'ini matchni iciga yuklayapmiz
 
 		const result = await this.propertyModel
 			.aggregate([
-				{ $match: match },
-				{ $sort: sortFinal },
+				// aggregate static methodini chaqirib unga [] ni argument sifatida path bo'ladi
+				{ $match: match }, // bitta pipelineda match  qilinyapti
+				{ $sort: sortFinal }, // bitta pipelineda sort qilinyapti
 				{
 					$facet: {
+						// faced orqali alohida 2 ta pipeline hosil qildik
 						list: [
-							{ $skip: (input.page - 1) * input.limit },
-							{ $limit: input.limit }, // [property1, propetry2]
+							// listda pagination qonuniyatini hosil qildik
+							{ $skip: (input.page - 1) * input.limit }, // qatorlarni o'tkazib yuborish
+							{ $limit: input.limit }, // faqat kerkali miqdordagi qatorni olib beradi
 							lookupMember, // [memberData] ni olib beradi
 							{ $unwind: '$memberData' }, // bu [memberData] => arrayni tushirib memberData ni olib beradi
 						],
@@ -242,17 +250,30 @@ export class PropertyService {
 		let { propertyStatus, soldAt, deletedAt } = input;
 		const search: T = {
 			_id: input._id,
-			propertyStatus: PropertyStatus.ACTIVE,
+			propertyStatus: PropertyStatus.ACTIVE, // AMIN faqat ACTIVE propertylarni o'zgartirishi mumkin
 		};
 
 		if (propertyStatus === PropertyStatus.SOLD) input.soldAt = moment().toDate();
+		// o'zgartirmoqwchi bo'lgan propetryimiz statusi SOLD bo'lsa uni vaqtini belgilayapmiz
 		else if (propertyStatus === PropertyStatus.DELETE) input.deletedAt = moment().toDate();
+		// propetryimiz statusi DELETE bo'lsa uni o'chirilgan vaqtini belgilayapmiz
 
-		const result = await this.propertyModel.findOneAndUpdate(search, input, { new: true }).exec();
+		const result = await this.propertyModel
+			.findOneAndUpdate(
+				search, // yuqoridagi search objecti
+				input, // o'zgarayotgan qiymatlar ketma ketigi
+				{ new: true }, // o'zgargan qiymat
+			)
+			.exec();
+
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 
-		if (soldAt || deletedAt) {
-			await this.memberService.memberStatsEditor({ _id: result.memberId, targetKey: 'memberProperties', modifier: -1 });
+		if (soldAt || deletedAt) {  // agar admin soldAt yoki deletedAt qilgan bo'lsa 
+			await this.memberService.memberStatsEditor({
+				_id: result.memberId, // propertyimizni egasini
+				targetKey: 'memberProperties', // memberProperties sonini
+				modifier: -1,  // -1 ga kamaytiramiz
+			});
 		}
 
 		return result;
@@ -260,8 +281,10 @@ export class PropertyService {
 
 	public async removePropertyByAdmin(propertyId: ObjectId): Promise<Property> {
 		const search: T = { _id: propertyId, propertyStatus: PropertyStatus.DELETE };
+		// {biz o'chirmoqchi bo'lgan propertyIDsi, faqat statusi DELETE bo'lgan propertyni o'chira olamiz}
 		const result = await this.propertyModel.findOneAndDelete(search).exec();
-		if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
+		if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);  
+		// agar o'chirilmagan bo'lsa shu mantiq ishga tushadi
 
 		return result;
 	}
