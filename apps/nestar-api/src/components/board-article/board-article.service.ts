@@ -59,10 +59,12 @@ export class BoardArticleService {
 				await this.boardArticleStatsEditor({ _id: articleId, targetKey: 'articleViews', modifier: 1 });
 				targetBoardArticle.articleViews += 1;
 			}
-		}
+			
+			// meLike
 
 		targetBoardArticle.memberData = await this.memberService.getMember(null, targetBoardArticle.memberId);
 		return targetBoardArticle;
+	 }
 	}
 
 	public async updateBoardArticle(memberId: ObjectId, input: BoardArticleUpdate): Promise<BoardArticle> {
