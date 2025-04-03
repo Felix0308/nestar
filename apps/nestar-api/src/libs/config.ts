@@ -36,3 +36,22 @@ export const lookupMember = {
 		as: 'memberData',  // agar topilsa uning qiymatini memberData bilan belgilayapmiz
 	},
 };
+
+// followingId orqali members collectiondan uni ID ga teng bo'lgan qiymatni hosil qilib, followingData ga tenglashtirdik 
+export const lookupFollowingData = {
+	$lookup: {   
+		from: 'members',
+		localField: 'followingId',
+		foreignField: '_id',
+		as: 'followingData',
+	},
+};
+
+export const lookupFollowerData = {
+	$lookup: {
+		from: 'members',
+		localField: 'followerId',
+		foreignField: '_id',
+		as: 'followerData',
+	},
+};
