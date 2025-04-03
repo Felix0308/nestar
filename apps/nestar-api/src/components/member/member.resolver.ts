@@ -21,20 +21,26 @@ export class MemberResolver {
 	constructor(private readonly memberService: MemberService) {}
 
 	@Mutation(() => Member)
-	public async signup(@Args('input') input: MemberInput): Promise<Member> {
+	public async signup(
+		@Args('input') input: MemberInput
+	): Promise<Member> {
 		console.log('Mutation: singup');
 		return await this.memberService.signup(input);
 	}
 
 	@Mutation(() => Member)
-	public async login(@Args('input') input: LoginInput): Promise<Member> {
+	public async login(
+		@Args('input') input: LoginInput
+	): Promise<Member> {
 		console.log('Mutation: login');
 		return await this.memberService.login(input);
 	}
 
 	@UseGuards(AuthGuard)
 	@Query(() => String)
-	public async checkAuth(@AuthMember('memberNick') memberNick: string): Promise<string> {
+	public async checkAuth(
+		@AuthMember('memberNick') memberNick: string
+	): Promise<string> {
 		console.log('Query сheckAuth');
 		console.log(memberNick);
 		return `hi ${memberNick}`;
@@ -43,7 +49,9 @@ export class MemberResolver {
 	@Roles(MemberType.USER, MemberType.AGENT)
 	@UseGuards(RolesGuard)
 	@Query(() => String)
-	public async checkAuthRoles(@AuthMember() authMember: Member): Promise<string> {
+	public async checkAuthRoles(
+		@AuthMember() authMember: Member
+	): Promise<string> {
 		console.log('Query checkAuth');
 		return `hi ${authMember.memberNick},you are ${authMember.memberType} (member_id:${authMember._id})`;
 	}
@@ -61,7 +69,10 @@ export class MemberResolver {
 
 	@UseGuards(WithoutGuard)
 	@Query(() => Member)
-	public async getMember(@Args('memberId') input: string, @AuthMember('_id') memberId: ObjectId): Promise<Member> {
+	public async getMember(
+		@Args('memberId') input: string, 
+		@AuthMember('_id') memberId: ObjectId
+	): Promise<Member> {
 		console.log('Query: getMember');
 		const targetId = shapeIntoMongoObjectId(input);
 		return await this.memberService.getMember(memberId, targetId);
@@ -69,7 +80,9 @@ export class MemberResolver {
 
 	@UseGuards(WithoutGuard)
 	@Query(() => Members) // ixtiyoriy member ishlata oladi
-	public async getAgents(@Args('input') input: AgentsInquiry, @AuthMember('_id') memberId: ObjectId): Promise<Members> {
+	public async getAgents(
+		@Args('input') input: AgentsInquiry, 
+		@AuthMember('_id') memberId: ObjectId): Promise<Members> {
 		console.log('Query: getAgents');
 		return await this.memberService.getAgents(memberId, input);
 	}
@@ -91,7 +104,9 @@ export class MemberResolver {
 	@Roles(MemberType.ADMIN)
 	@UseGuards(RolesGuard)
 	@Query(() => Members)
-	public async getAllMembersByAdmin(@Args('input') input: MembersInquiry): Promise<Members> {
+	public async getAllMembersByAdmin(
+		@Args('input') input: MembersInquiry
+	): Promise<Members> {
 		console.log('Mutation: getAllMembersByAdmin');
 		return await this.memberService.getAllMembersByAdmin(input);
 	}
@@ -99,7 +114,9 @@ export class MemberResolver {
 	@Roles(MemberType.ADMIN)
 	@UseGuards(RolesGuard)
 	@Mutation(() => Member)
-	public async updateMemberByAdmin(@Args('input') input: MemberUpdate): Promise<Member> {
+	public async updateMemberByAdmin(
+		@Args('input') input: MemberUpdate
+	): Promise<Member> {
 		// console.log('input', input);
 		console.log('Mutation: updateMemberByAdmin');
 
