@@ -98,7 +98,11 @@ export class MemberService {
 			}
 		}
 		// meLiked
+		const likeInput: LikeInput = { memberId: memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
+		targetMember.meLiked = await this.likeService.checkLikeExistence(likeInput);
+
 		// meFollowed
+		// targetMember.meFollowed = await this.checkSubscription(memberId, targetId);
 
 		return targetMember;
 	}

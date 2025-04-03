@@ -1,6 +1,7 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { ObjectId } from 'mongoose';
 import { MemberAuthType, MemberStatus, MemberType } from '../../enums/member.enum';
+import { MeLiked } from '../like/like';
 
 @ObjectType() // backend serverdan clientga yuborilayotganda (pipe)dto larni qurish un ishlatiladigon decorator hisoblanadi
 export class Member {
@@ -79,8 +80,15 @@ export class Member {
 	updatedAt: Date;
 
 	@Field(() => String, { nullable: true })
-	accessToken?: String;
+	accessToken?: string;
 
+	/** from aggregation */
+
+	@Field(() => [MeLiked], { nullable: true })
+	meLiked?: MeLiked[];
+
+	// @Field(() => [MeFollowed], { nullable: true })
+	// meFollowed?: MeFollowed[];
 }
 
 @ObjectType()
