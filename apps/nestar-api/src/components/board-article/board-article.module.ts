@@ -6,6 +6,7 @@ import BoardArticleSchema from '../../schemas/BoardArticle.model';
 import { AuthModule } from '../auth/auth.module';
 import { ViewModule } from '../view/view.module';
 import { MemberModule } from '../member/member.module';
+import { LikeModule } from '../like/like.module';
 
 @Module({
 	imports: [
@@ -13,6 +14,7 @@ import { MemberModule } from '../member/member.module';
 		MemberModule, // memberservice dagi statistikasni update qilish mantig'ini ishlatamiz
 		AuthModule, // auth ichidagi decorate va guardslardan foydalana olamiz
 		ViewModule,
+		LikeModule,
 	],
 	providers: [BoardArticleResolver, BoardArticleService],
 	exports: [BoardArticleService], // BoardArticleService tashqarida ishlatish un

@@ -62,6 +62,16 @@ export class BoardArticleResolver {
 		console.log('Query: getBoardArticles');
 		return await this.boardArticleService.getBoardArticles(memberId, input);
 	}
+	@UseGuards(AuthGuard)
+	@Mutation(() => BoardArticle)
+	public async likeTargetBoardArticle(
+		@Args('articleId') input: string,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<BoardArticle> {
+		console.log('Mutation: likeTargetBoardArticle');
+		const likeRefId = shapeIntoMongoObjectId(input);
+		return await this.boardArticleService.likeTargetBoardArticle(memberId, likeRefId);
+	}
 
 	/** ADMIN **/
 	@Roles(MemberType.ADMIN)
@@ -69,7 +79,7 @@ export class BoardArticleResolver {
 	@Query((returns) => BoardArticles)
 	public async getAllBoardArticlesByAdmin(
 		@Args('input') input: AllBoardArticlesInquiry,
-		@AuthMember('_id') memberId: ObjectId,  // ixtiyoriy agar ADMIN memberId si kerak bo'lsa yoziladi, bo'lmasa shartmas 
+		@AuthMember('_id') memberId: ObjectId, // ixtiyoriy agar ADMIN memberId si kerak bo'lsa yoziladi, bo'lmasa shartmas
 	): Promise<BoardArticles> {
 		console.log('Query: getAllBoardArticlesByAdmin');
 		return await this.boardArticleService.getAllBoardArticlesByAdmin(input);
