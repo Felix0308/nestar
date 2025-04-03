@@ -19,6 +19,9 @@ import { ViewService } from '../view/view.service';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import * as moment from 'moment';
 import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { LikeInput } from '../../libs/dto/like/like.input';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { LikeService } from '../like/like.service';
 
 @Injectable()
 export class PropertyService {
@@ -26,6 +29,7 @@ export class PropertyService {
 		@InjectModel('Property') private readonly propertyModel: Model<Property>,
 		private memberService: MemberService,
 		private viewService: ViewService,
+		private likeService: LikeService,
 	) {}
 
 	public async createProperty(input: PropertyInput): Promise<Property> {
@@ -200,6 +204,30 @@ export class PropertyService {
 		return result[0];
 	}
 
+	public async likeTargetProperty(memberId: ObjectId, likeRefId: ObjectId): Promise<Property> {
+		const target: Property | null = await this.propertyModel
+			.findOne({ _id: likeRefId, propertyStatus: PropertyStatus.ACTIVE })
+			.exec();
+		if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		const input: LikeInput = { 
+			memberId: memberId, 
+			likeRefId: likeRefId, 
+			likeGroup: LikeGroup.PROPERTY 
+		};
+
+		const modifier = await this.likeService.toggleLike(input);
+		const result = await this.propertyStatsEditor({
+			// propertyni static datasi yangilanadi
+			_id: likeRefId,
+			targetKey: 'propertyLikes',
+			modifier: modifier,
+		});
+		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+
+		return result;
+	}
+
 	/** ADMIN */
 	public async getAllPropertiesByAdmin(input: AllPropertiesInquiry): Promise<Properties> {
 		const { page, limit, sort, direction, search } = input;
@@ -261,11 +289,12 @@ export class PropertyService {
 
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 
-		if (soldAt || deletedAt) {  // agar admin soldAt yoki deletedAt qilgan bo'lsa 
+		if (soldAt || deletedAt) {
+			// agar admin soldAt yoki deletedAt qilgan bo'lsa
 			await this.memberService.memberStatsEditor({
 				_id: result.memberId, // propertyimizni egasini
 				targetKey: 'memberProperties', // memberProperties sonini
-				modifier: -1,  // -1 ga kamaytiramiz
+				modifier: -1, // -1 ga kamaytiramiz
 			});
 		}
 
@@ -276,7 +305,7 @@ export class PropertyService {
 		const search: T = { _id: propertyId, propertyStatus: PropertyStatus.DELETE };
 		// {biz o'chirmoqchi bo'lgan propertyIDsi, faqat statusi DELETE bo'lgan propertyni o'chira olamiz}
 		const result = await this.propertyModel.findOneAndDelete(search).exec();
-		if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);  
+		if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
 		// agar o'chirilmagan bo'lsa shu mantiq ishga tushadi
 
 		return result;
