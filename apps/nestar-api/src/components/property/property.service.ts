@@ -6,6 +6,7 @@ import { Direction, Message } from '../../libs/enums/common.enum';
 import {
 	AgentPropertiesInquiry,
 	AllPropertiesInquiry,
+	OrdinaryInquiry,
 	PISearch,
 	PropertiesInquiry,
 	PropertyInput,
@@ -177,6 +178,10 @@ export class PropertyService {
 		}
 	}
 
+	public async getFavorites(memberId: ObjectId, input: OrdinaryInquiry): Promise<Properties> {
+		return await this.likeService.getFavoriteProperties(memberId, input);
+	}
+
 	public async getAgentProperties(memberId: ObjectId, input: AgentPropertiesInquiry): Promise<Properties> {
 		const { page, limit, sort, direction, search } = input;
 
@@ -212,10 +217,10 @@ export class PropertyService {
 			.exec();
 		if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
-		const input: LikeInput = { 
-			memberId: memberId, 
-			likeRefId: likeRefId, 
-			likeGroup: LikeGroup.PROPERTY 
+		const input: LikeInput = {
+			memberId: memberId,
+			likeRefId: likeRefId,
+			likeGroup: LikeGroup.PROPERTY,
 		};
 
 		const modifier = await this.likeService.toggleLike(input);
