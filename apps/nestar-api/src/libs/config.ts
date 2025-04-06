@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import { T } from './types/common';
+import { ObjectId as MongooseId } from 'mongoose';
 
 export const availableAgentsSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews', 'memberRank'];
 export const availableMembersSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews'];
@@ -30,13 +31,13 @@ export const shapeIntoMongoObjectId = (target: any) => {
 	return typeof target === 'string' ? new ObjectId(target) : target;
 };
 
-export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id') => {
+export const lookupAuthMemberLiked = (memberId: MongooseId | null, targetRefId: string = '$_id') => {
 	return {
 		$lookup: {
 			from: 'likes',
 			let: {
 				//search mehanizmini tashkillashtirishda yordam beradigon variable
-				localLikeRefId: targetRefId,  // "_id"
+				localLikeRefId: targetRefId, // "_id"
 				localMemberId: memberId,
 				localMyFavorite: true,
 			},
@@ -44,16 +45,13 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
 				{
 					$match: {
 						$expr: {
-							$and: [
-								{ $eq: ['$likeRefId', '$$localLikeRefId'] }, 
-								{ $eq: ['$memberId', '$$localMemberId'] }
-							],
+							$and: [{ $eq: ['$likeRefId', '$$localLikeRefId'] }, { $eq: ['$memberId', '$$localMemberId'] }],
 						},
 					},
 				},
 				{
 					$project: {
-						_id: 0,  // id ni olib bermasin
+						_id: 0, // id ni olib bermasin
 						memberId: 1,
 						likeRefId: 1,
 						myFavorite: '$$localMyFavorite',
@@ -61,6 +59,43 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
 				},
 			],
 			as: 'meLiked',
+		},
+	};
+};
+
+interface LookupAuthMemberFollowed {
+	followerId: MongooseId | null;
+	followingId: string;
+}
+export const lookupAuthMemberFollowed = (input: LookupAuthMemberFollowed) => {
+	const { followerId, followingId } = input;
+	return {
+		$lookup: {
+			from: 'follows', // -collection
+			let: {
+				//search mehanizmini tashkillashtirishda yordam beradigon variable
+				localFollowerId: followerId,
+				localFollowingId: followingId,
+				localMyFavorite: true,
+			},
+			pipeline: [
+				{
+					$match: {
+						$expr: {
+							$and: [{ $eq: ['$followerId', '$$localFollowerId'] }, { $eq: ['$followingId', '$$localFollowingId'] }],
+						},
+					},
+				},
+				{
+					$project: {
+						_id: 0,
+						followingId: 1,
+						followerId: 1,
+						myFollowing: '$$localMyFavorite',
+					},
+				},
+			],
+			as: 'meFollowed',
 		},
 	};
 };
