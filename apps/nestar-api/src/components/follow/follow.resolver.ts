@@ -15,7 +15,7 @@ export class FollowResolver {
 
 	@UseGuards(AuthGuard)
 	@Mutation(() => Follower)
-	public async subscribe(  // boshqa memberga folling qilganimizda ishlatiladi
+	public async subscribe(  // boshqa memberga following qilganimizda ishlatiladi
         @Args('input') input: string, 
         @AuthMember('_id') memberId: ObjectId
     ): Promise<Follower> {

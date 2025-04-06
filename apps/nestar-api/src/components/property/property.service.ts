@@ -18,7 +18,7 @@ import { ViewInput } from '../../libs/dto/view/view.input';
 import { ViewService } from '../view/view.service';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import * as moment from 'moment';
-import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeService } from '../like/like.service';
@@ -127,7 +127,7 @@ export class PropertyService {
 						list: [
 							{ $skip: page - 1 },
 							{ $limit: limit },
-							//meliked
+							lookupAuthMemberLiked(memberId),
 							lookupMember, // config.ts da logic yozilgan
 							{ $unwind: '$memberData' }, // array ichidagi malumotni memberData ga to'g'rilab berayapti
 						],
