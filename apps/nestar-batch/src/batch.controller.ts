@@ -9,20 +9,12 @@ export class BatchController {
 
 	constructor(private readonly batchService: BatchService) {}
 
-	@Timeout(1000)  // har 1 sekundda ishga tushirib beradi
+	@Timeout(1000) // har 1 sekundda ishga tushirib beradi
 	hadnleTimeOut() {
 		this.logger.debug('BATCH SERVER READY!');
 	}
 
-  /*
-  @Interval(1000)
-  handleInterval() {
-  this.logger.debug('INTERVAL TEST');
-  }
-  */
-
-	@Cron('00 00 01 * * *', { name: BATCH_ROLLBACK })  
-  // @Cron - JOB Schedule larni yasashda yordamga keladi
+	@Cron('00 00 01 * * *', { name: BATCH_ROLLBACK })
 	public async batchRollback() {
 		try {
 			this.logger['context'] = BATCH_ROLLBACK;
@@ -34,25 +26,33 @@ export class BatchController {
 	}
 
 	@Cron('20 00 01 * * *', { name: BATCH_TOP_PROPERTIES })
-	public async batchProperties() {
+	public async batchTopProperties() {
 		try {
 			this.logger['context'] = BATCH_TOP_PROPERTIES;
 			this.logger.debug('EXECUTED!');
-			await this.batchService.batchProperties();
+			await this.batchService.batchTopProperties();
 		} catch (err) {
 			this.logger.error(err);
 		}
 	}
+
 	@Cron('40 00 01 * * *', { name: BATCH_TOP_AGENTS })
-	public async batchAgents() {
+	public async batchTopAgents() {
 		try {
 			this.logger['context'] = BATCH_TOP_AGENTS;
 			this.logger.debug('EXECUTED!');
-			await this.batchService.batchAgents();
+			await this.batchService.batchTopAgents();
 		} catch (err) {
 			this.logger.error(err);
 		}
 	}
+
+	/* @Interval(1000)
+  handleInterval() {
+    this.logger.debug('INTERVAL TEST');
+
+   } */
+
 	@Get()
 	getHello(): string {
 		return this.batchService.getHello();
