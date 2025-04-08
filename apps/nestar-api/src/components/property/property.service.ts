@@ -126,8 +126,8 @@ export class PropertyService {
 				{
 					$facet: {
 						list: [
-							{ $skip: page - 1 },
-							{ $limit: limit },
+							  { $skip: (page - 1) * limit },
+   							 { $limit: limit },
 							lookupAuthMemberLiked(memberId),
 							lookupMember, // config.ts da logic yozilgan
 							{ $unwind: '$memberData' }, // array ichidagi malumotni memberData ga to'g'rilab berayapti

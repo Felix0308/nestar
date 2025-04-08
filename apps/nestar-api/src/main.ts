@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { LoggingInterceptor } from './libs/interceptor/Logging.interceptor';
 import { graphqlUploadExpress } from 'graphql-upload';
 import * as express from 'express';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -23,6 +24,8 @@ async function bootstrap() {
 	app.use('/uploads', express.static('./uploads')); 
 	// uploads folderini tashqariga ochiqlayapmiz
 
+	app.useWebSocketAdapter(new WsAdapter(app)); 
+	// sock4etmodule o'z faoliyatini bajarishi uchun zamin yaratib beradi
 	await app.listen(process.env.PORT_API ?? 3000);
 }
 bootstrap();
