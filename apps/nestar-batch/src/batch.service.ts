@@ -8,9 +8,7 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class BatchService {
-	public getHello(): string {
-		return 'Welcome to Nestar BATCH Server!';
-	}
+	
 	public async batchRollback(): Promise<void> {
 		console.log('batchRollback');
 	}
@@ -21,5 +19,9 @@ export class BatchService {
 
 	public async batchAgents(): Promise<void> {
 		console.log('batchAgents');
+	}
+  
+  public getHello(): string {
+		return 'Welcome to Nestar BATCH Server!';
 	}
 }
