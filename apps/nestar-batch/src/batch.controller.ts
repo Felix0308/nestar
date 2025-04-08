@@ -1,12 +1,60 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import { BatchService } from './batch.service';
+import { Cron, Interval, Timeout } from '@nestjs/schedule';
+import { BATCH_ROLLBACK, BATCH_TOP_AGENTS, BATCH_TOP_PROPERTIES } from './lib/config';
 
 @Controller()
 export class BatchController {
-  constructor(private readonly BatchService: BatchService) {}
+	private logger: Logger = new Logger('BatchController');
 
-  @Get()
-  getHello(): string {
-    return this.BatchService.getHello();
+	constructor(private readonly batchService: BatchService) {}
+
+	@Timeout(1000)  // har 1 sekundda ishga tushirib beradi
+	hadnleTimeOut() {
+		this.logger.debug('BATCH SERVER READY!');
+	}
+
+  /*
+  @Interval(1000)
+  handleInterval() {
+  this.logger.debug('INTERVAL TEST');
   }
+  */
+
+	@Cron('00 00 01 * * *', { name: BATCH_ROLLBACK })  
+  // @Cron - JOB Schedule larni yasashda yordamga keladi
+	public async batchRollback() {
+		try {
+			this.logger['context'] = BATCH_ROLLBACK;
+			this.logger.debug('EXECUTED!');
+			await this.batchService.batchRollback();
+		} catch (err) {
+			this.logger.error(err);
+		}
+	}
+
+	@Cron('20 00 01 * * *', { name: BATCH_TOP_PROPERTIES })
+	public async batchTopProperties() {
+		try {
+			this.logger['context'] = BATCH_TOP_PROPERTIES;
+			this.logger.debug('EXECUTED!');
+			await this.batchService.batchTopProperties();
+		} catch (err) {
+			this.logger.error(err);
+		}
+	}
+	@Cron('40 00 01 * * *', { name: BATCH_TOP_AGENTS })
+	public async batchTopAgents() {
+		try {
+			this.logger['context'] = BATCH_TOP_AGENTS;
+			this.logger.debug('EXECUTED!');
+			await this.batchService.batchTopAgents();
+		} catch (err) {
+			this.logger.error(err);
+		}
+	}
+	@Get()
+	getHello(): string {
+		return this.batchService.getHello();
+	}
 }
