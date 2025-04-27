@@ -10,7 +10,7 @@ import { DatabaseModule } from './database/database.module';
 import { T } from './libs/types/common';
 import { SocketModule } from './socket/socket.module';
 
-@Module({  
+@Module({
 	imports: [
 		ConfigModule.forRoot(),
 		GraphQLModule.forRoot({
@@ -24,9 +24,7 @@ import { SocketModule } from './socket/socket.module';
 				const graphqlFormattedError = {
 					// errorni bir standartga keltirdik
 					code: error?.extensions.code,
-					message: error?.extensions?.response?.message || 
-					error?.extensions?.response?.message || 
-					error?.message,
+					message: error?.extensions?.response?.message || error?.extensions?.response?.message || error?.message,
 				};
 
 				console.log('GraphQL global Error:', graphqlFormattedError);
@@ -35,9 +33,9 @@ import { SocketModule } from './socket/socket.module';
 		}),
 		ComponentsModule, // HTTP
 		DatabaseModule, // TCP
-		SocketModule, 
+		SocketModule,
 	],
-	controllers: [AppController],  // bu server Rest Api sifatiada run bo'lyapti
-	providers: [AppService, AppResolver],  // graphQL sifatida ham run bo'lyapti
+	controllers: [AppController], // bu server Rest Api sifatiada run bo'lyapti
+	providers: [AppService, AppResolver], // graphQL sifatida ham run bo'lyapti
 })
 export class AppModule {}

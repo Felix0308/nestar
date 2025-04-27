@@ -149,7 +149,7 @@ export class PropertyService {
 			memberId, // distarction qilyapmiz: inputni ichidan quyidagi malumotlarni qabul qilyapmiz
 			locationList,
 			typeList,
-			roomList,
+			roomsList,
 			bedsList,
 			options,
 			pricesRange,
@@ -159,10 +159,11 @@ export class PropertyService {
 		} = search;
 
 		if (memberId) match.memberId = shapeIntoMongoObjectId(memberId); // memberId mavjud bo'lsa matchga memberId ni yuklayapmiz, ayni agentimizni propertylarini olib beradi
-		if (locationList) match.propertyLocation = { $in: locationList }; // aynan locationlistlarni olib beradi arrayda
-		if (roomList) match.propertyRooms = { $in: roomList };
-		if (bedsList) match.propertyBeds = { $in: bedsList };
-		if (typeList) match.propertyType = { $in: typeList };
+		if (locationList && locationList.length) match.propertyLocation = { $in: locationList };
+		// aynan locationlistlarni olib beradi arrayda
+		if (roomsList && roomsList.length) match.propertyRooms = { $in: roomsList };
+		if (bedsList && bedsList.length) match.propertyBeds = { $in: bedsList };
+		if (typeList && typeList.length) match.propertyType = { $in: typeList };
 
 		if (pricesRange) match.propertyPrice = { $gte: pricesRange.start, $lte: pricesRange.end };
 		// $gte: katta yoki teng, $lte: kichik yoki teng
