@@ -67,7 +67,6 @@ export class MemberService {
 		const result: Member | null = await this.memberModel
 			.findOneAndUpdate({ _id: memberId, memberStatus: MemberStatus.ACTIVE }, input, { new: true })
 			.exec();
-
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 
 		result.accessToken = await this.authService.createToken(result);
